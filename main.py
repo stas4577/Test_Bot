@@ -138,7 +138,7 @@ def url(message):
     # btn2 = types.InlineKeyboardButton(text='sssss', url='https://habr.com/ru/all/')
     # markup.add(btn1, btn2)
     bot.send_message(message.chat.id, 'Привет, я бот помощник, теперь я буду помогать вам здесь \U0001F601')
-    Data.data.new_chat(message.chat.id)
+    users_data.new_chat(message.chat.id)
 
 
 @bot.message_handler(commands=['remove'])
