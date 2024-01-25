@@ -14,15 +14,15 @@ import re
 
 def send_message_about_late(late_list, chat_id):
     if late_list:
-        text = "{time} отчёт не сдали во время: {users}, не пропустите его в следующий раз".format(
+        text = "{time} Г®ГІГ·ВёГІ Г­ГҐ Г±Г¤Г Г«ГЁ ГўГ® ГўГ°ГҐГ¬Гї: {users}, Г­ГҐ ГЇГ°Г®ГЇГіГ±ГІГЁГІГҐ ГҐГЈГ® Гў Г±Г«ГҐГ¤ГіГѕГ№ГЁГ© Г°Г Г§".format(
             users=' '.join(late_list), time=report_type)
     else:
-        text = "{time} отчёт сдали все участники, продолжайте в том же духе!".format(time=report_type)
+        text = "{time} Г®ГІГ·ВёГІ Г±Г¤Г Г«ГЁ ГўГ±ГҐ ГіГ·Г Г±ГІГ­ГЁГЄГЁ, ГЇГ°Г®Г¤Г®Г«Г¦Г Г©ГІГҐ Гў ГІГ®Г¬ Г¦ГҐ Г¤ГіГµГҐ!".format(time=report_type)
     bot.send_message(chat_id, text)
 
 
 def send_notify(late_list, chat_id):
-    text = "Напоминание: осталось 15 минут чтобы сдать {time} отчёт. Не отправили отчёт {users}".format(
+    text = "ГЌГ ГЇГ®Г¬ГЁГ­Г Г­ГЁГҐ: Г®Г±ГІГ Г«Г®Г±Гј 15 Г¬ГЁГ­ГіГІ Г·ГІГ®ГЎГ» Г±Г¤Г ГІГј {time} Г®ГІГ·ВёГІ. ГЌГҐ Г®ГІГЇГ°Г ГўГЁГ«ГЁ Г®ГІГ·ВёГІ {users}".format(
         users=' '.join(late_list), time=report_type.lower())
     bot.send_message(chat_id, text)
 
@@ -94,10 +94,10 @@ class Checker:
 
         global report_type
 
-        if report_type == 'Утренний':
-            report_type = 'Вечерний'
+        if report_type == 'Г“ГІГ°ГҐГ­Г­ГЁГ©':
+            report_type = 'Г‚ГҐГ·ГҐГ°Г­ГЁГ©'
         else:
-            report_type = 'Утренний'
+            report_type = 'Г“ГІГ°ГҐГ­Г­ГЁГ©'
 
 
 bot = telebot.TeleBot('6685040611:AAHMXsQ0xLOkWIsZvjNmxtldUUIZU6b9GI0')
@@ -125,20 +125,19 @@ else:
                                         evening_time_notify.second)
 
 if 0 <= datetime.datetime.now().hour < morning_time.hour:
-    report_type = 'Утренний'
+    report_type = 'Г“ГІГ°ГҐГ­Г­ГЁГ©'
 else:
-    report_type = 'Вечерний'
-print(report_type)
+    report_type = 'Г‚ГҐГ·ГҐГ°Г­ГЁГ©'
 
 
-# TODO Сделать проверку на наличие чата в базе
+# TODO Г‘Г¤ГҐГ«Г ГІГј ГЇГ°Г®ГўГҐГ°ГЄГі Г­Г  Г­Г Г«ГЁГ·ГЁГҐ Г·Г ГІГ  Гў ГЎГ Г§ГҐ
 @bot.message_handler(commands=['start'])
 def url(message):
     # markup = types.InlineKeyboardMarkup()
     # btn1 = types.InlineKeyboardButton(text='asd', url='https://habr.com/ru/all/')
     # btn2 = types.InlineKeyboardButton(text='sssss', url='https://habr.com/ru/all/')
     # markup.add(btn1, btn2)
-    bot.send_message(message.chat.id, 'Привет, я бот помощник, теперь я буду помогать вам здесь \U0001F601')
+    bot.send_message(message.chat.id, 'ГЏГ°ГЁГўГҐГІ, Гї ГЎГ®ГІ ГЇГ®Г¬Г®Г№Г­ГЁГЄ, ГІГҐГЇГҐГ°Гј Гї ГЎГіГ¤Гі ГЇГ®Г¬Г®ГЈГ ГІГј ГўГ Г¬ Г§Г¤ГҐГ±Гј \U0001F601')
     Data.data.new_chat(message.chat.id)
 
 
@@ -146,7 +145,7 @@ def url(message):
 def remove_user(message):
     res = re.search(r"\s@\S*\b", message.text)
     if res is None:
-        bot.send_message(message.chat.id, 'Не удалось найти участника с данным тэгом, проверьте правильность введённых данных')
+        bot.send_message(message.chat.id, 'ГЌГҐ ГіГ¤Г Г«Г®Г±Гј Г­Г Г©ГІГЁ ГіГ·Г Г±ГІГ­ГЁГЄГ  Г± Г¤Г Г­Г­Г»Г¬ ГІГЅГЈГ®Г¬, ГЇГ°Г®ГўГҐГ°ГјГІГҐ ГЇГ°Г ГўГЁГ«ГјГ­Г®Г±ГІГј ГўГўГҐГ¤ВёГ­Г­Г»Гµ Г¤Г Г­Г­Г»Гµ')
     else:
         res = res.group().strip()
         bot.send_message(message.chat.id, res)
@@ -158,7 +157,7 @@ def remove_user(message):
 
 @bot.message_handler(content_types='text')
 def check_report(message):
-    if message.text.startswith('#оу') or message.text.startswith('#ов'):
+    if message.text.startswith('#Г®Гі') or message.text.startswith('#Г®Гў'):
         users_data.send_report(message)
 
     else:
