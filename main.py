@@ -131,6 +131,7 @@ else:
 
 
 # TODO Сделать проверку на наличие чата в базе
+# TODO Баг, если написать /start в существующем чате, участики из базы пропадут!
 @bot.message_handler(commands=['start'])
 def url(message):
     # markup = types.InlineKeyboardMarkup()
