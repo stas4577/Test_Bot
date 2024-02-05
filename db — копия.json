@@ -1,15 +1,34 @@
 {
   "chats": {
     "-1002006004505": {
+      "day": 8,
+      "table": null,
       "users": {
         "465757477": {
           "user_name": "arhangelsky_stas",
+          "is_done": false
+        },
+        "462825551": {
+          "user_name": "Aleksey_Arkhangelskiy",
+          "is_done": false
+        },
+        "409223200": {
+          "user_name": "anastasiya_arhangelskaya",
           "is_done": false
         }
       }
     },
     "-1002034695710": {
-      "users": {}
+      "users": {
+        "465757477": {
+          "user_name": "arhangelsky_stas",
+          "is_done": true,
+          "list_id": 702556900
+        }
+      },
+      "table": "1163680125",
+      "day": 6
     }
-  }
+  },
+  "sheet_id": "1Pa-9_336uLKvtbDhJbt9MF5Ag1lTDMCC4VtJF1BV1fs"
 }
