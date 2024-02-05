@@ -285,24 +285,24 @@ def check_report(message):
     # message.chat.title - Имя группы
 
     # TODO Включить проверку является ли пользователь админом группы
-    # if not user_is_admin:
+    if not user_is_admin:
 
     # Проверка существования чата в БД
-    if str(message.chat.id) not in users_data.data['chats'].keys():
-        bot.send_message(message.chat.id, 'Бот пока не работает в этой группе, для запуска бота напишите /start в чат')
-        return False
+        if str(message.chat.id) not in users_data.data['chats'].keys():
+            bot.send_message(message.chat.id, 'Бот пока не работает в этой группе, для запуска бота напишите /start в чат')
+            return False
 
-    if report_type == 'Утренний':
-        if message.text.startswith('#оу'):
-            if check_message_day(message.text, message.chat.id):
-                users_data.send_report(message)
-    elif report_type == 'Вечерний':
-        if message.text.startswith('#ов'):
-            if check_message_day(message.text, message.chat.id):
-                users_data.send_report(message)
+        if report_type == 'Утренний':
+            if message.text.startswith('#оу'):
+                if check_message_day(message.text, message.chat.id):
+                    users_data.send_report(message)
+        elif report_type == 'Вечерний':
+            if message.text.startswith('#ов'):
+                if check_message_day(message.text, message.chat.id):
+                    users_data.send_report(message)
 
-    else:
-        return False
+        else:
+            return False
 
     if message.text == 'Отправить отчёт в ЛС' and user_is_admin:
         print('SUCCESS!')
