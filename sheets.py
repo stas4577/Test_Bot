@@ -4,6 +4,8 @@
 import httplib2
 import apiclient.discovery
 from oauth2client.service_account import ServiceAccountCredentials
+import datetime
+import time
 
 # spreadsheet = service.spreadsheets().create(body = {
 #     'properties': {'title': 'Первый тестовый документ', 'locale': 'ru_RU'},
@@ -33,8 +35,8 @@ class Sheets:
     api_url = 'https://docs.google.com/spreadsheets/d/'
 
     @classmethod
-    def change_sheet(cls, id):
-        cls.SHEET_ID = id
+    def change_sheet(cls, change_id):
+        cls.sheet_id = change_id
 
     @classmethod
     def colnum_string(cls, n):
@@ -51,6 +53,7 @@ class Sheets:
         # Читаем ключи из файла
         credentials = ServiceAccountCredentials.from_json_keyfile_name(CREDENTIALS_FILE,
                                                                        ['https://www.googleapis.com/auth/spreadsheets',
+                                                                        'https://www.googleapis.com/auth/spreadsheets.readonly',
                                                                         'https://www.googleapis.com/auth/drive'])
 
         cls.httpAuth = credentials.authorize(httplib2.Http())  # Авторизуемся в системе
@@ -60,24 +63,32 @@ class Sheets:
         cls.driveService = apiclient.discovery.build('drive', 'v3',
                                                      http=cls.httpAuth)  # Выбираем работу с Google Drive и 3 версию API
 
+
     @classmethod
-    def create_table(cls, name: str, chat_name: str):
+    def get_lists(cls):
+        res = cls.service.spreadsheets().get(spreadsheetId=cls.sheet_id).execute()
+        sheetList = res.get('sheets')
+        res = []
+        for item in sheetList:
+            print(item)
+            res.append(item['properties']['title'])
+        return res
+
+    @classmethod
+    def create_table(cls, table_name: str):
         spreadsheet = cls.service.spreadsheets().create(body={
-            'properties': {'title': name, 'locale': 'ru_RU'},
-            'sheets': [{'properties': {'sheetType': 'GRID',
-                                       'sheetId': 0,
-                                       'title': chat_name,
-                                       'gridProperties': {'rowCount': 100, 'columnCount': 15}}}]
+            'properties': {'title': table_name, 'locale': 'ru_RU'},
+
         }).execute()
         cls.access = cls.driveService.permissions().create(
             fileId=spreadsheet['spreadsheetId'],
-            body={'type': 'user', 'role': 'writer', 'emailAddress': 'stasarh2002@gmail.com'},
+            body={'type': 'anyone', 'role': 'reader'},
             # Открываем доступ на редактирование
             fields='id'
         ).execute()
 
         res = cls.api_url + spreadsheet['spreadsheetId']
-        return res
+        return res, spreadsheet['spreadsheetId']
 
     @classmethod
     def create_list(cls, name: str):
@@ -101,6 +112,7 @@ class Sheets:
             }).execute()
         print(results)
         return results
+
 
     @classmethod
     def set_alligment(cls, list_id: str):
@@ -143,13 +155,13 @@ class Sheets:
                                                                valueRenderOption='FORMATTED_VALUE',
                                                                dateTimeRenderOption='FORMATTED_STRING').execute()
         sheet_values = results['valueRanges'][0]['values']
-        print(sheet_values)
-        print(date)
         row_num = 0
         for i_date in range(len(sheet_values)):
             if sheet_values[i_date][0] == date:
                 row_num = i_date + 2
                 break
+        if row_num == 0:
+            row_num = 2
         results = cls.service.spreadsheets().values().batchUpdate(spreadsheetId=cls.sheet_id, body={
             "valueInputOption": "USER_ENTERED",
             # Данные воспринимаются, как вводимые пользователем (считается значение формул)
@@ -187,66 +199,16 @@ class Sheets:
                                 },
                             }
                         },
-                    }
+                    },
+
                 ]
             }).execute()
-        print(result)
+        print('Добавил лист для пользователя:', user_name)
         res_list_id = result['replies'][0]['addSheet']['properties']['sheetId']
+        cls.set_header_width(res_list_id)
+        date = datetime.datetime.now()
+        date = '-'.join([str(date.year), str(date.month), str(date.day)])
 
-        results = cls.service.spreadsheets().batchUpdate(
-            spreadsheetId=cls.sheet_id,
-            body=
-            {
-                "requests":
-                    [
-                        {
-                            "updateDimensionProperties": {
-                                "range": {
-                                    "sheetId": res_list_id,
-                                    "dimension": "COLUMNS",
-                                    "startIndex": 0,
-                                    "endIndex": 7
-                                },
-                                "properties": {
-                                    "pixelSize": 200
-                                },
-                                "fields": "pixelSize"
-                            }
-                        },
-                        {
-                            "repeatCell":
-                                {
-                                    "cell":
-                                        {
-                                            "userEnteredFormat":
-                                                {
-                                                    "horizontalAlignment": 'CENTER',
-                                                    "backgroundColor": {
-                                                        "red": 0.8,
-                                                        "green": 0.8,
-                                                        "blue": 0.8,
-                                                        "alpha": 1
-                                                    },
-                                                    "textFormat":
-                                                        {
-                                                            "bold": True,
-                                                            "fontSize": 12
-                                                        }
-                                                }
-                                        },
-                                    "range":
-                                        {
-                                            "sheetId": res_list_id,
-                                            "startRowIndex": 0,
-                                            "endRowIndex": 1,
-                                            "startColumnIndex": 0,
-                                            "endColumnIndex": 7
-                                        },
-                                    "fields": "userEnteredFormat"
-                                }
-                        }
-                    ]
-            }).execute()
 
         res = cls.service.spreadsheets().values().batchUpdate(spreadsheetId=cls.sheet_id, body={
             "valueInputOption": "USER_ENTERED",
@@ -269,17 +231,20 @@ class Sheets:
         }).execute()
 
         cls.set_alligment(res_list_id)
+        cls.new_day(date, user_name)
+        print('Добавил день для нового пользователя')
 
         return result
 
     @classmethod
     def new_day(cls, date, list_name: str):
+
         resource = {
             "majorDimension": "ROWS",
             "values": [[date]]
         }
         range = "{list_name}!A:A".format(list_name=list_name)
-        cls.service.spreadsheets().values().append(
+        res = cls.service.spreadsheets().values().append(
             spreadsheetId=cls.sheet_id,
             range=range,
             body=resource,
@@ -306,6 +271,29 @@ class Sheets:
         print(response['values'][0])
         print(len(response['values'][0]))
         print(cls.colnum_string(len(response['values'][0])))
+
+    @classmethod
+    def set_header_width(cls, sheet_id):
+        results = cls.service.spreadsheets().batchUpdate(spreadsheetId=cls.sheet_id, body={
+            "requests": [
+
+                # Задать ширину столбца A: 20 пикселей
+                {
+                    "updateDimensionProperties": {
+                        "range": {
+                            "sheetId": sheet_id,
+                            "dimension": "COLUMNS",  # Задаем ширину колонки
+                            "startIndex": 0,  # Нумерация начинается с нуля
+                            "endIndex": 7  # Со столбца номер startIndex по endIndex - 1 (endIndex не входит!)
+                        },
+                        "properties": {
+                            "pixelSize": 200  # Ширина в пикселях
+                        },
+                        "fields": "pixelSize"  # Указываем, что нужно использовать параметр pixelSize
+                    }
+                },
+            ]
+        }).execute()
 
 # print(Engine.sheet_id)
 # Engine.connect()
